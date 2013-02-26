@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<config>
+
+	<tabs>
+		<items translate="label" module="items">
+            <label>Mercado Libre</label>
+            <sort_order>9000212</sort_order>
+        </items>
+	</tabs>
+	<sections>
+		<mlitems translate="label">
+		  <label>Items</label>
+		  <tab>items</tab>
+		  <frontend_type>text</frontend_type>
+		  <sort_order>1000</sort_order>
+		  <show_in_default>1</show_in_default>
+		  <show_in_website>1</show_in_website>
+		  <show_in_store>1</show_in_store>
+		  <groups>
+				<generalsetting translate="label">
+						<label>General Settings</label>
+						<frontend_type>text</frontend_type>
+						<sort_order>100</sort_order>
+						<show_in_default>1</show_in_default>
+						<show_in_website>1</show_in_website>
+						<show_in_store>1</show_in_store>
+						<fields>
+							<enablelogging translate="label comment">
+								<label>Enable Logging</label>							
+								<frontend_type>select</frontend_type>
+								<source_model>adminhtml/system_config_source_yesno</source_model>
+								<sort_order>2</sort_order>
+								<show_in_default>1</show_in_default>
+								<show_in_website>1</show_in_website>
+								<show_in_store>1</show_in_store>
+							</enablelogging>
+							<logcleanup translate="label comment">
+								<label>Log Cleanup interval</label>
+								<comment>
+									<![CDATA[Enter numeric value only,value will be considered as in days</span>]]>
+								</comment>
+								<frontend_type>text</frontend_type>
+								<validate>required-entry</validate>
+								<sort_order>10</sort_order>
+								<show_in_default>1</show_in_default>
+								<show_in_website>1</show_in_website>
+								<show_in_store>1</show_in_store>
+							</logcleanup>
+							<templateid translate="label comment">
+								<label>Notification Template ID</label>
+								<comment>
+									<![CDATA[Template ID from Magento "Manage Template" Interface</span>]]>
+								</comment>
+								<frontend_type>text</frontend_type>
+								<validate>required-entry</validate>
+								<sort_order>10</sort_order>
+								<show_in_default>1</show_in_default>
+								<show_in_website>1</show_in_website>
+								<show_in_store>1</show_in_store>
+							</templateid>
+						</fields>		
+					</generalsetting>
+			 </groups>		
+		 </mlitems>
+	 </sections>
+</config>
