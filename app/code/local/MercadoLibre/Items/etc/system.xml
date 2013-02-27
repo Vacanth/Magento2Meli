@@ -17,7 +17,7 @@
 		  <show_in_website>1</show_in_website>
 		  <show_in_store>1</show_in_store>
 		  <groups>
-				<generalsetting translate="label">
+				<meligeneralsetting translate="label">
 						<label>General Settings</label>
 						<frontend_type>text</frontend_type>
 						<sort_order>100</sort_order>
@@ -26,7 +26,8 @@
 						<show_in_store>1</show_in_store>
 						<fields>
 							<enablelogging translate="label comment">
-								<label>Enable Logging</label>							
+								<label>Enable Logging</label>
+							
 								<frontend_type>select</frontend_type>
 								<source_model>adminhtml/system_config_source_yesno</source_model>
 								<sort_order>2</sort_order>
@@ -46,10 +47,10 @@
 								<show_in_website>1</show_in_website>
 								<show_in_store>1</show_in_store>
 							</logcleanup>
-							<templateid translate="label comment">
-								<label>Notification Template ID</label>
+							<notificationemailid translate="label comment">
+								<label>Notification Email Id</label>
 								<comment>
-									<![CDATA[Template ID from Magento "Manage Template" Interface</span>]]>
+									<![CDATA[Notification Email Id from Magento "Manage Template" Interface</span>]]>
 								</comment>
 								<frontend_type>text</frontend_type>
 								<validate>required-entry</validate>
@@ -57,10 +58,48 @@
 								<show_in_default>1</show_in_default>
 								<show_in_website>1</show_in_website>
 								<show_in_store>1</show_in_store>
-							</templateid>
+							</notificationemailid>
 						</fields>		
-					</generalsetting>
-			 </groups>		
+					</meligeneralsetting>
+				<categoriesupdateinformation translate="label">
+					<label>Categories Update Information</label>
+					<frontend_type>text</frontend_type>
+					<sort_order>200</sort_order>
+					<show_in_default>1</show_in_default>
+					<show_in_website>1</show_in_website>
+					<show_in_store>1</show_in_store>
+					<fields>
+						<contentcreationdate translate="label comment">
+							<label>Content Creation Date</label>
+							<sort_order>2</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</contentcreationdate>
+						<lastrundata translate="label comment">
+							<label>Last Run Date</label>
+							<comment>
+								<![CDATA[Enter numeric value only,value will be considered as in days</span>]]>
+							</comment>
+							<frontend_type>text</frontend_type>
+							<sort_order>10</sort_order>
+							<show_in_default>1</show_in_default>
+							<show_in_website>1</show_in_website>
+							<show_in_store>1</show_in_store>
+						</lastrundata>
+						<mlrootcategories translate="label">
+                            <label>ML Root Categories</label>
+                            <frontend_type>multiselect</frontend_type>
+                            <source_model>mercadolibre_items_model_system_config_source_rootcategories</source_model>
+                            <sort_order>20</sort_order>
+                            <show_in_default>1</show_in_default>
+                            <show_in_website>1</show_in_website>
+                            <show_in_store>1</show_in_store>
+                            <can_be_empty>1</can_be_empty>
+                        </mlrootcategories>
+					</fields>		
+				</categoriesupdateinformation>
+		  </groups> 	 		
 		 </mlitems>
 	 </sections>
 </config>

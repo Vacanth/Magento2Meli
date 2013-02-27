@@ -18,7 +18,7 @@ class MercadoLibre_Items_Adminhtml_ItemsController extends Mage_Adminhtml_Contro
 
 	public function editAction() {
 		$id     = $this->getRequest()->getParam('id');
-		$model  = Mage::getModel('items/items')->load($id);
+		$model  = Mage::getModel('items/melicategories')->load($id);
 
 		if ($model->getId() || $id == 0) {
 			$data = Mage::getSingleton('adminhtml/session')->getFormData(true);
@@ -81,7 +81,7 @@ class MercadoLibre_Items_Adminhtml_ItemsController extends Mage_Adminhtml_Contro
 			}
 	  			
 	  			
-			$model = Mage::getModel('items/items');		
+			$model = Mage::getModel('items/melicategories');		
 			$model->setData($data)
 				->setId($this->getRequest()->getParam('id'));
 			
@@ -117,7 +117,7 @@ class MercadoLibre_Items_Adminhtml_ItemsController extends Mage_Adminhtml_Contro
 	public function deleteAction() {
 		if( $this->getRequest()->getParam('id') > 0 ) {
 			try {
-				$model = Mage::getModel('items/items');
+				$model = Mage::getModel('items/melicategories');
 				 
 				$model->setId($this->getRequest()->getParam('id'))
 					->delete();
@@ -139,7 +139,7 @@ class MercadoLibre_Items_Adminhtml_ItemsController extends Mage_Adminhtml_Contro
         } else {
             try {
                 foreach ($itemsIds as $itemsId) {
-                    $items = Mage::getModel('items/items')->load($itemsId);
+                    $items = Mage::getModel('items/melicategories')->load($itemsId);
                     $items->delete();
                 }
                 Mage::getSingleton('adminhtml/session')->addSuccess(

@@ -6,29 +6,29 @@ class MercadoLibre_Items_Block_Adminhtml_Items_Grid extends Mage_Adminhtml_Block
   {
       parent::__construct();
       $this->setId('itemsGrid');
-      $this->setDefaultSort('items_id');
+      $this->setDefaultSort('category_id');
       $this->setDefaultDir('ASC');
       $this->setSaveParametersInSession(true);
   }
 
   protected function _prepareCollection()
   {
-      $collection = Mage::getModel('items/items')->getCollection();
+      $collection = Mage::getModel('items/melicategories')->getCollection();
       $this->setCollection($collection);
       return parent::_prepareCollection();
   }
 
   protected function _prepareColumns()
   {
-      $this->addColumn('items_id', array(
+      $this->addColumn('category_id', array(
           'header'    => Mage::helper('items')->__('ID'),
           'align'     =>'right',
           'width'     => '50px',
-          'index'     => 'items_id',
+          'index'     => 'category_id',
       ));
 
-      $this->addColumn('title', array(
-          'header'    => Mage::helper('items')->__('Title'),
+      $this->addColumn('meli_category_name', array(
+          'header'    => Mage::helper('items')->__('Category'),
           'align'     =>'left',
           'index'     => 'title',
       ));
@@ -80,8 +80,8 @@ class MercadoLibre_Items_Block_Adminhtml_Items_Grid extends Mage_Adminhtml_Block
 
     protected function _prepareMassaction()
     {
-        $this->setMassactionIdField('items_id');
-        $this->getMassactionBlock()->setFormFieldName('items');
+        $this->setMassactionIdField('category_id');
+        $this->getMassactionBlock()->setFormFieldName('meli_category_name');
 
         $this->getMassactionBlock()->addItem('delete', array(
              'label'    => Mage::helper('items')->__('Delete'),

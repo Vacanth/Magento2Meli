@@ -125,6 +125,8 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 				$write->query("UPDATE core_config_data  set value = '".$x_content_created."' where path='mlitems/categoriesupdateinformation/contentcreationdate'"); 
 				$write->query("UPDATE core_config_data  set value = '".$runDateTime."' where path='mlitems/categoriesupdateinformation/lastrundata'"); 
 				
+				
+				
 			  
 				if (is_dir($dir)) {
 					if (!@unlink($dir)) {

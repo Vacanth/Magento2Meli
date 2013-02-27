@@ -10,7 +10,7 @@
 <config>
     <modules>
         <MercadoLibre_Items>
-            <version>0.1.1</version>
+            <version>0.1.2</version>
         </MercadoLibre_Items>
     </modules>
     <frontend>
@@ -155,6 +155,15 @@
                 <class>MercadoLibre_Items_Helper</class>
             </items>
         </helpers>
+		<template>
+			<email>                                                                   
+			  <meli_notification-template>
+				<label>Cron Job Notification Message</label>
+				<file>meli_notification-template.html</file>
+				<type>html</type>
+			  </meli_notification-template>
+			</email>
+	  </template>
     </global>
    <crontab>
         <jobs>
@@ -173,7 +182,15 @@
                 <run>
                     <model>mercadolibre_items/observer::getMLCategoryAttributes</model>
                 </run>
-            </mercadolibre_items_getallcategoriesattrData>            
+            </mercadolibre_items_getallcategoriesattrData>      
+			<mercadolibre_items_logcleanup>
+                <schedule>
+                    <cron_expr>50 0 * * 0</cron_expr><!-- every week run at 11PM -->
+                </schedule>
+                <run>
+                    <model>mercadolibre_items/observer::getCleanUpLog</model>
+                </run>
+            </mercadolibre_items_logcleanup>            
         </jobs>
     </crontab>
 
@@ -182,8 +199,10 @@
         	<generalsetting> <!-- Name of group -->
         		<enablelogging>1</enablelogging> <!-- Name of field -->
 				<logcleanup>7</logcleanup> <!-- Name of field -->
-				<templateid>1</templateid> <!-- Name of field -->        		
+				<notificationemailid>gupta.p@indiabulls.com</notificationemailid>
         	</generalsetting>
+			<categoriesupdateinformation>
+			</categoriesupdateinformation>
         </mlitems>
     </default>
 

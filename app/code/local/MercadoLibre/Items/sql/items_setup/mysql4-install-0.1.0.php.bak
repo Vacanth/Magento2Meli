@@ -24,9 +24,6 @@ CREATE TABLE {$this->getTable('meli_categories')} (
   `site_id` varchar(100) DEFAULT NULL,
   `has_attributes` tinyint(1) NOT NULL DEFAULT '0',
   `root_id` varchar(20) NOT NULL DEFAULT '0',
-  `listing_allowed` enum(20) NOT NULL DEFAULT '0',
-  `root_id` varchar(20) NOT NULL DEFAULT '0',
-  
   PRIMARY KEY (`category_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

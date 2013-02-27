@@ -11,5 +11,10 @@ class MercadoLibre_Items_Model_Observer
 	{
 	  Mage::getModel('items/melicategories')->getMLCategoryAttributes();
 
+    }
+   
+   public function getCleanUpLog($observer){
+   		 Mage::getModel('items/common')->getCleanUpLog();
    }
+   
 }

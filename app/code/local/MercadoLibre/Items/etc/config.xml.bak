@@ -173,7 +173,15 @@
                 <run>
                     <model>mercadolibre_items/observer::getMLCategoryAttributes</model>
                 </run>
-            </mercadolibre_items_getallcategoriesattrData>            
+            </mercadolibre_items_getallcategoriesattrData>      
+			<mercadolibre_items_logcleanup>
+                <schedule>
+                    <cron_expr>50 0 * * 0</cron_expr><!-- every week run at 11PM -->
+                </schedule>
+                <run>
+                    <model>mercadolibre_items/observer::getCleanUpLog</model>
+                </run>
+            </mercadolibre_items_logcleanup>            
         </jobs>
     </crontab>
 
@@ -183,10 +191,19 @@
         		<enablelogging>1</enablelogging> <!-- Name of field -->
 				<logcleanup>7</logcleanup> <!-- Name of field -->
 				<templateid>1</templateid> <!-- Name of field -->
-        		
         	</generalsetting>
+			<categoriesupdateinformation>
+			</categoriesupdateinformation>
         </mlitems>
     </default>
-
+	<template>
+    <email>                                                                   
+      <meli_notification-template>
+        <label>Application Status Message</label>
+        <file>meli_notification-template.html</file>
+        <type>html</type>
+      </meli_notification-template>
+    </email>
+  </template>
 
 </config>
