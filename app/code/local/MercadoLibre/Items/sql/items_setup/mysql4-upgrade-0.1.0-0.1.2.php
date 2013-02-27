@@ -1,14 +1,22 @@
-<?php
-
+<?php 
 try {
-$installer = $this;
-$meli_categories = $dir.DS.'meli_categories.csv';
-$installer->startSetup();
 
-$installer->run('LOAD DATA LOCAL INFILE "'.$meli_categories.'" INTO TABLE meli_categories FIELDS TERMINATED BY "," enclosed by \'"\' LINES TERMINATED BY "\n" (category_id, meli_category_id, meli_category_name,site_id, has_attributes,root_id,listing_allowed,buying_allowed);');
+$dataFile = Mage::getBaseDir('var').DS.'category'. DS. 'meli_categories.sql';
+if (file_exists($dataFile) && is_readable($dataFile)) {
+	$dataFileData  = file_get_contents($dataFile);
+}
+
+$installer = $this;
+$installer->startSetup();
+$installer->run("
+
+$dataFileData
+
+
+");
 
     $installer->endSetup();
 } catch (Exception $e) {
-  print_r($e);
+print_r($e);
     die;
 }

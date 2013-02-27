@@ -20,11 +20,7 @@ class MercadoLibre_Items_IndexController extends Mage_Core_Controller_Front_Acti
 	//private $to = 'gupta.p@indiabulls.com';
 	
 	public function indexAction()
-	{	
-		$this->to = Mage::getStoreConfig("mlitems/meligeneralsetting/notificationemailid",Mage::app()->getStore());
-		$commonModel = Mage::getModel('items/common');
-		$commonModel->sendNotificationMail($this->to, 'Cron Jobs', 'Notification Message Success');
-		exit;	
+	{			
 		$this->loadLayout();
 		$this->renderLayout();
 	}
