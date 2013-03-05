@@ -16,11 +16,10 @@ class MercadoLibre_Items_IndexController extends Mage_Core_Controller_Front_Acti
 	private $errorMessage = "";
 	private $successMessage = "";
 	private $to ='';
-
-	//private $to = 'gupta.p@indiabulls.com';
 	
 	public function indexAction()
-	{			
+	{	
+				
 		$this->loadLayout();
 		$this->renderLayout();
 	}
@@ -53,3 +52,9 @@ class MercadoLibre_Items_IndexController extends Mage_Core_Controller_Front_Acti
 			$melicategoriesModel -> getMLCatergoriesWithFilter();
 	}
 }
+
+
+
+
+
+

@@ -27,9 +27,9 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 	public function getMLCatergoriesAllData()
     {
 		try{
-			$this->to = Mage::getStoreConfig("mlitems/meligeneralsetting/notificationemailid",Mage::app()->getStore());
 			//Initilize logger model
 			$commonModel = Mage::getModel('items/common');
+			$this->to = Mage::getStoreConfig("mlitems/meligeneralsetting/notificationemailid",Mage::app()->getStore());
 		
 			$this->infoMessage ="INFORMATION:: getMLCatergoriesAllDataAction Started";
 			$commonModel->saveLogger($this->moduleName, "Information", $this->fileName, $this->infoMessage);
@@ -41,13 +41,6 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 			$resMelicategoryupdate = Mage::getModel('items/melicategoryupdate')->getCollection()->addFieldToFilter('created_datetime',$x_content_created);
 			$resCheckUpdate = $resMelicategoryupdate->getData();
 			
-			$runDateTime = date('Y-m-d h:i:s', time());
-			$melicategoryupdate = Mage::getModel('items/melicategoryupdate');
-			$updateCofig = '';
-			$updateCofig .= "INSERT INTO `meli_category_update` (`update_id`, `created_datetime`, `run_datetime`) VALUES (NULL, '".$x_content_created."', '".$runDateTime."')".";\n\n";
-			$updateCofig .= "UPDATE core_config_data  set value = '".$x_content_created."' where path='mlitems/categoriesupdateinformation/contentcreationdate'".";\n\n";
-			$updateCofig .= "UPDATE core_config_data  set value = '".$runDateTime."' where path='mlitems/categoriesupdateinformation/lastrundata'".";\n\n";
-			
 			if(empty($resCheckUpdate)){
 				$resCheckUpdate['0']['update_id'] = 0;
 			}
@@ -55,7 +48,9 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 			try{
 			  
 			   if(trim($resCheckUpdate['0']['update_id']) == '' || trim($resCheckUpdate['0']['update_id']) == '0'){
-				$dir = Mage::getBaseDir('var').DS.'category';
+			 
+				$fileName = 'allCategoryJsonData';
+				$dir = Mage::getBaseDir('code').DS.'local\MercadoLibre\dump\category';
 				try{
 					if (!is_dir($dir)) {
 						if (!@mkdir($dir , 0777, true)) {
@@ -70,55 +65,58 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 				$data = $commonModel ->connect($service_url);
 				
 				try{
-					if (!@file_put_contents($dir . DS . $this->fileNameCat,  $data)) {
-						  return false;
+					if (!@file_put_contents($dir . DS . $fileName . '.txt',  $data)) {
+						return false;
 					}
 				}catch(Exception $e){
-						$this->errorMessage = "Error::Unable to write data in file(".$dir . DS . $this->fileNameCat.")";
+						$this->errorMessage = "Error::Unable to write data in file(".$dir . DS . $fileName ."txt)";
 						$commonModel->saveLogger($this->moduleName, "Error", $this->fileName, $this->errorMessage);
 				}
 				try{
-					$dataFile = $dir . DS . $this->fileNameCat;
+					$dataFile = $dir . DS . $fileName . '.txt';
 					if (file_exists($dataFile) && is_readable($dataFile)) {
 						$dataFileData  = file_get_contents($dataFile);
 					}
 				}catch(Exception $e){
-						$this->errorMessage = "Error::Unable to read data in file(".$dir . DS . $this->fileNameCat.")";
+						$this->errorMessage = "Error::Unable to read data in file(".$dir . DS . $fileName ."txt)";
 						$commonModel->saveLogger($this->moduleName, "Error", $this->fileName, $this->errorMessage);
 				}
 				/* Get Json data to array*/
 			    $dataArr = json_decode($dataFileData);
+			    $i=0;
 				$catList = array();
-					$sqlInsert = '';
-					$sqlInsert = 'INSERT INTO `meli_categories` (`category_id`, `meli_category_id`, `meli_category_name`, `site_id`, `has_attributes`, `root_id`, `listing_allowed`, `buying_allowed`) VALUES '."\n";
 				if(count($dataArr) > 0){
 					foreach($dataArr as $row)
-					{	
+					{
 						$site_id = 'NULL';
 						$site_id = substr($row->id,0,3);
 						$root_id = (Mage::helper('items')->getMLRootId($row->path_from_root)) ? Mage::helper('items')->getMLRootId($row->path_from_root):0;
 						$has_attributes = 0;	
 						$listing_allowed = (isset($row->settings->listing_allowed) && $row->settings->listing_allowed == true)?$row->settings->listing_allowed:0;	
 						$buying_allowed = (isset($row->settings->buying_allowed) && $row->settings->buying_allowed == true)?$row->settings->buying_allowed:0;						
-					    $sqlInsert .= "(NULL, '".mysql_real_escape_string($row->id)."','".mysql_real_escape_string($row->name)."', '".mysql_real_escape_string($site_id)."', ".mysql_real_escape_string($has_attributes).",'".mysql_real_escape_string($root_id)."', '".mysql_real_escape_string($listing_allowed)."','".mysql_real_escape_string($buying_allowed)."'),\n";
+						$catList[] = array('NULL', $row->id,$row->name, $site_id, $has_attributes,$root_id,$listing_allowed,$buying_allowed);
+						$i++;
 					}
-						$sqlInsert = substr($sqlInsert, 0 ,-2).";";
-						$sqlInsert .= "\n\n\n".$updateCofig;
-						/* get category data into meli_categories.sql*/
-						$dataFile = Mage::getBaseDir('var').DS.'category'. DS. 'meli_categories.sql';
-						file_put_contents($dataFile, trim($sqlInsert));			
+					/* get category data into meli_categories.csv*/
+					$fp = fopen($dir . DS.'meli_categories.csv', 'w');
+					foreach ($catList as $fields) {
+						fputcsv($fp, $fields);
+					}
+					fclose($fp);  
+					
 					try{				
+
 						/** TRUNCATE TABLE `meli_categories` to add new data again */
 						$write = Mage::getSingleton('core/resource')->getConnection('core_write');
 						$write->query("TRUNCATE TABLE `meli_categories`");
-						$write->query("TRUNCATE TABLE `meli_category_update`");
+
 						/* import category data into meli_categories*/
-						$dataFile = Mage::getBaseDir('var').DS.'category'. DS. 'meli_categories.sql';
-						if (file_exists($dataFile) && is_readable($dataFile)) {
-							$dataFileData  = file_get_contents($dataFile);
-						}
-						/** Write data in to table meli_categories & melicategoryupdate */
-						$write->multiQuery(" $dataFileData "); 
+						$db = Mage::getSingleton('core/resource')->getConnection('core_write');
+						$filename = implode('/',split('[\]',Mage::getBaseDir('code').DS.'local\MercadoLibre\dump\category\meli_categories.csv'));
+						$sql = "LOAD DATA  INFILE '".$filename."' INTO TABLE `meli_categories` FIELDS TERMINATED BY ',' lines terminated by '\n'";
+						$db->query($sql);
+						
+						
 						
 					} catch(PDOException $e){
 						$this->errorMessage = $e->getTrace()."::".$e->getMessage();
@@ -126,6 +124,13 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 					}
 					
 				}
+				$runDateTime = date('Y-m-d h:i:s', time());
+				$melicategoryupdate = Mage::getModel('items/melicategoryupdate');
+				$melicategoryupdate->setCreatedDatetime($x_content_created);
+				$melicategoryupdate->setRunDatetime($runDateTime);
+				$melicategoryupdate->save();
+				$write->query("UPDATE core_config_data  set value = '".$x_content_created."' where path='mlitems/categoriesupdateinformation/contentcreationdate'"); 
+				$write->query("UPDATE core_config_data  set value = '".$runDateTime."' where path='mlitems/categoriesupdateinformation/lastrundata'"); 
 
 				if (is_dir($dir)) {
 					if (!@unlink($dir)) {
@@ -166,7 +171,7 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 				try{
 					if(count($dataMLcat) > 0){
 						
-						$dir = Mage::getBaseDir('var').DS.'category-attributes';
+						$dir = Mage::getBaseDir('code').DS.'local\MercadoLibre\dump\category-attributes';
 						
 						try{
 							if (!is_dir($dir)) 
@@ -246,12 +251,13 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 				/** Check for meli_categories data exist */			
 				if(count($dataMLcat) > 0){
 					/** TRUNCATE TABLE meli_category_attributes and meli_category_attribute_values before Insert data */
-					$dir = Mage::getBaseDir('var').DS.'category-attributes';
+					$dir =Mage::getBaseDir('code').DS.'local\MercadoLibre\dump\category-attributes';
 					$write = Mage::getSingleton('core/resource')->getConnection('core_write');
 					
 					$write->query("TRUNCATE TABLE `meli_category_attributes_temp`");
 					$write->query("TRUNCATE TABLE `meli_category_attribute_values_temp`");
-									
+					
+					$last_attribute_id = 0;	 			
 					foreach($dataMLcat as $row){
 					
 						$meli_category_id = '';
@@ -276,27 +282,26 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 						if(count($attributesArr) > 0)
 						{
 							
-							$i=0;
+							
+							$sql_meli_attr = '';
 							foreach($attributesArr as $rowAttribute)
 							{
-								
 								$rowAttribute = (array)$rowAttribute;
-								$type  = (isset($rowAttribute['type']))?$rowAttribute['type']:'NULL';
-								$required  = (isset($rowAttribute['tags']->required))?1:0;	
-								$sql_meli_attr = '';
-								$sql_meli_attr = "insert into `meli_category_attributes_temp` set category_id='".$category_id."', meli_attribute_id='".$rowAttribute['id']."',meli_attribute_name='".$rowAttribute['name']."',meli_attribute_type='".$type."',required='".$required."'";
-							
-								$write->query($sql_meli_attr);
-								$insertId = $write->lastInsertId();
-
-								if(count($rowAttribute['values']) > 0)
-								{
-									/** Insert data into meli_category_attribute_values */
-									$this->getMLCategoryAttributesValue($insertId,$rowAttribute['values']);
+								if(isset($rowAttribute['name']) && trim($rowAttribute['name'])!=''){
+									$last_attribute_id++;
+									$type  = (isset($rowAttribute['type']))?$rowAttribute['type']:'NULL';
+									$required  = (isset($rowAttribute['tags']->required))?1:0;	
+									$sql_meli_attr .= "insert into `meli_category_attributes_temp` set attribute_id ='".$last_attribute_id."', category_id='".$category_id."', meli_attribute_id='".$rowAttribute['id']."',meli_attribute_name='".$rowAttribute['name']."',meli_attribute_type='".$type."',required='".$required."'".";";	
+									/* Last inserted id for this meli_category_attributes_temp */							
+									$insertId = $last_attribute_id;
+									if(is_array($rowAttribute['values']) && count($rowAttribute['values']) > 0)
+									{
+										/** Insert data into meli_category_attribute_values */
+										$sql_meli_attr .= $this->getMLCategoryAttributesValue($insertId,$rowAttribute['values']);
+									}
 								}
-
-								$i++;
 							}
+							$write->multiQuery($sql_meli_attr);
 						}
 					}
 					
@@ -309,7 +314,7 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 					$sql_final_dump = "insert into  meli_category_attribute_values (attribute_id, meli_value_id, meli_value_name, meli_value_name_extended) select attribute_id, meli_value_id, meli_value_name, meli_value_name_extended from meli_category_attribute_values_temp";						
 					$write->query($sql_final_dump);
 
-					$commonModel->rrmdir($dir);
+					//$commonModel->rrmdir($dir);
  
 					
 				}
@@ -328,14 +333,17 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 	public function getMLCategoryAttributesValue($attributeId, $arrayAttribute = array())
 	{
 		try{
+			$commonModel = Mage::getModel('items/common');
 			$this->to = Mage::getStoreConfig("mlitems/meligeneralsetting/notificationemailid",Mage::app()->getStore());
 			$write = Mage::getSingleton('core/resource')->getConnection('core_write');
+			$sql_meli_attr_vals = '';
 			foreach($arrayAttribute as $rowAttriVal){
-
 				$rowAttriVal = (array)$rowAttriVal;
-				$sql_meli_attr_vals = "insert into `meli_category_attribute_values_temp` set attribute_id='".$attributeId."', meli_value_id='".$rowAttriVal['id']."',meli_value_name='".$rowAttriVal['name']."',meli_value_name_extended=''";						
-				$write->query($sql_meli_attr_vals);
+				if(isset($rowAttriVal['name']) && trim($rowAttriVal['name'])!=''){
+					$sql_meli_attr_vals .= "insert into `meli_category_attribute_values_temp` set attribute_id='".$attributeId."', meli_value_id='".$rowAttriVal['id']."',meli_value_name='".$rowAttriVal['name']."',meli_value_name_extended=''".";";		
+				}				
 		   }
+		   return $sql_meli_attr_vals;
 	   } catch(Exception $e){
 			$commonModel->saveLogger($this->moduleName, "Exception", $this->fileName, $e->getMessage());
 			$commonModel->sendNotificationMail($this->to, 'Exception::ML Catergories Attributes Value', $e->getMessage());		
@@ -349,17 +357,22 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 				$this->to = Mage::getStoreConfig("mlitems/meligeneralsetting/notificationemailid",Mage::app()->getStore());
 				$commonModel = Mage::getModel('items/common');
 				
-				$this->infoMessage ="INFORMATION:: getMLCatergoriesAllDataAction Started";
+				$this->infoMessage ="INFORMATION:: getMLCatergoriesWithFilter Started";
 				$commonModel->saveLogger($this->moduleName, "Information", $this->fileName, $this->infoMessage);
 				$commonModel->sendNotificationMail($this->to, 'ML Catergories All Data Cron Started', $this->infoMessage);
+				/* Get Root Category To Be Filter */
 				$rootCategory = Mage::getStoreConfig("mlitems/categoriesupdateinformation/mlrootcategories",Mage::app()->getStore());
 				$rootCategoryArr = split(',',$rootCategory);
+				/* Category To Be Filter Start */
 				if(count($rootCategoryArr) > 0){
 					$write = Mage::getSingleton('core/resource')->getConnection('core_write');
 					$write->query("TRUNCATE TABLE `meli_categories_filter`");
 					foreach($rootCategoryArr as $key=>$value){
+						$insert_root_categories = '';
+						/* Save all child for this categoty */
 						$this->getMLCategoryRecursive($value);
 					}
+					
 					$this->infoMessage ="INFORMATION:: Categories (".$rootCategory.") data has been filtered successfully.";
 					$commonModel->saveLogger($this->moduleName, "Information", $this->fileName, $this->infoMessage);
 					$commonModel->sendNotificationMail($this->to, 'Categories data has been filtered successfully.', $this->infoMessage);
@@ -373,19 +386,23 @@ class MercadoLibre_Items_Model_MeliCategories extends Mage_Core_Model_Abstract
 	}
 	
 	public function getMLCategoryRecursive($rootId){
+			
 			try{
-				$commonModel = Mage::getModel('items/common');
-				$melicategories = Mage::getModel('items/melicategories')->getCollection()->addFieldToFilter('root_id',$rootId);
-				$dataMLcat = $melicategories->getData();
-				if(count($dataMLcat) > 0){
-					for($i=0; $i<count($dataMLcat); $i++){
-						$write = Mage::getSingleton('core/resource')->getConnection('core_write');
-						$sql_meli_cate_filter = '';
-						$sql_meli_cate_filter = "insert into `meli_categories_filter` set meli_category_id='".$dataMLcat[$i]['meli_category_id']."', meli_category_name='".$dataMLcat[$i]['meli_category_name']."',site_id='".$dataMLcat[$i]['site_id']."',has_attributes='".$dataMLcat[$i]['has_attributes']."',root_id = '".$dataMLcat[$i]['root_id']."',listing_allowed = '".$dataMLcat[$i]['listing_allowed']."', buying_allowed = '".$dataMLcat[$i]['buying_allowed']."'";						
-						$write->query($sql_meli_cate_filter);
-						$this->getMLCategoryRecursive($dataMLcat[$i]['meli_category_id']);
-					}
-				} 
+				 if(isset($rootId) && trim($rootId)!=''){
+					$commonModel = Mage::getModel('items/common');
+					$write = Mage::getSingleton('core/resource')->getConnection('core_write');
+					$sql_meli_cate_filter = '';
+					$sql_meli_cate_filter = "insert into  meli_categories_filter (meli_category_id, meli_category_name, site_id, 	has_attributes, root_id, listing_allowed, 	buying_allowed) select meli_category_id, meli_category_name, site_id, 	has_attributes, root_id, listing_allowed, 	buying_allowed from meli_categories where meli_category_id ='".$rootId."'".";";	
+					$write->query($sql_meli_cate_filter);
+					$melicategories = Mage::getModel('items/melicategories')->getCollection()->addFieldToFilter('root_id',$rootId);
+					
+					$dataMLcat = $melicategories->getData();
+					if(count($dataMLcat) > 0){
+						for($i=0; $i<count($dataMLcat); $i++){
+							 $this->getMLCategoryRecursive($dataMLcat[$i]['meli_category_id']);
+						}
+					} 
+				}
 			}catch(Exception $e){
 				$commonModel->saveLogger($this->moduleName, "Exception", $this->fileName, $e->getMessage());	
 			}
